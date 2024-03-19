@@ -1,0 +1,118 @@
+#Se importan las librerias necesarias
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk  # Importamos ttk para Treeview
+import sqlite3
+#Se crean las funciones necesarias
+def insertar_dAcademico():  #Funcion para insertar a la base de dato
+    # Se crea la tabla 
+    cursor.execute('''CREATE TABLE IF NOT EXISTS documentos_academicos (
+                    id INTEGER PRIMARY KEY,
+                    titulo TEXT,
+                    autor TEXT,
+                    tipo TEXT
+                  )''')
+    
+    ID = id.get()
+    Titulo = titulo.get()   # .get llama el valor ingresado en la entrada respectiva
+    Autor = autor.get()
+    Tipo = tipo.get()
+
+    cursor.execute('INSERT INTO documentos_academicos (id, titulo, autor, tipo) VALUES (?, ?, ?, ?)', (ID, Titulo, Autor, Tipo))    #Inserta los datos en la tabla creada
+    conexion.commit()   #Se guardan los cambios
+    messagebox.showinfo("Éxito", "Documento académico agregado correctamente")      # Crea una ventana de emergencia
+    mostrar_datos()
+
+def mostrar_datos():    # Funcion que muestra los datos
+    cursor.execute("SELECT * FROM documentos_academicos")   # Selecciona todos los registros y todas las columnas de la tabla
+    documentos_academicos = cursor.fetchall()   # Esta línea de código recupera todos los resultados de una consulta SQL ejecutada previamente y los almacena en la variable 'documentos_academicos'
+    tabla.delete(*tabla.get_children())  # Limpiar la tabla antes de insertar nuevos datos
+    for documento in documentos_academicos:     # Este fragmento de código está diseñado para agregar datos a una tabla en una interfaz gráfica utilizando la biblioteca Tkinter en Python
+        tabla.insert("", tk.END, values=documento)
+
+def borrar_seleccion():     # Funcion para borrar datos de la base de datos
+    seleccion = tabla.selection()      # Esta línea de código obtiene una lista de los elementos seleccionados en una tabla de la interfaz gráfica
+    if seleccion:       # Este condicional verifica si hay elementos seleccionados en la tabla
+        for item in seleccion:      # itera sobre cada elemento seleccionado en la tabla
+            documento_id = tabla.item(item, 'values')[0]  # Obtenemos el ID del documento seleccionado
+            cursor.execute("DELETE FROM documentos_academicos WHERE id=?", (documento_id,))     # Dentro del bucle, se obtiene el valor de la primera columna de la fila seleccionada
+            conexion.commit()       #Se ejecuta una consulta SQL para eliminar el documento de la base de datos
+        messagebox.showinfo("Éxito", "Documento(s) académico(s) eliminado(s) correctamente")    # Crea una ventana de emergencia
+        mostrar_datos()
+    else:
+        messagebox.showwarning("Advertencia", "Por favor, seleccione un documento para borrar")     # Crea una ventana de emergencia
+
+def actualizar_seleccion():
+    seleccion = tabla.selection()
+    if seleccion:       #Esta línea de código obtiene una lista de los elementos seleccionados en una tabla de la interfaz gráfica
+        # Obtener los valores de la fila seleccionada
+        item = tabla.selection()[0]
+        valores = tabla.item(item, 'values')
+
+        # Llenar los campos de entrada con los valores de la fila seleccionada
+        id.set(valores[0])      # Esta línea está estableciendo el valor de una variable llamada 'id'
+        titulo.set(valores[1])      # Esta línea está estableciendo el valor de una variable llamada 'titulo'
+        autor.set(valores[2])   # Esta línea está estableciendo el valor de una variable llamada 'autor'
+        tipo.set(valores[3])    # Esta línea está estableciendo el valor de una variable llamada 'tipo'
+    else:
+        messagebox.showwarning("Advertencia", "Por favor, seleccione un documento para actualizar")     # Crea una ventana de emergencia
+
+def consultar_base_datos():
+    mostrar_datos()
+
+conexion = sqlite3.connect('REFERENCIAS BIBLIOGRAFICAS DE DOCUMENTOS ACÁDEMICOS.db')    # Se crea la base de datos
+cursor = conexion.cursor()
+
+root = tk.Tk()      # Se crea la interfaz grafica
+root.title('Referencias Bibliográficas de Documentos Académicos')       #Crea el titulo de nuestra interfaz
+root.geometry('800x400')   # Se le dan dimensiones a la ventana de la interfaz 
+root.resizable(0, 0)
+
+# Crear tabla para mostrar los datos    
+tabla = ttk.Treeview(root, columns=("ID", "Título", "Autor", "Tipo"), show="headings")  # Muestra los datos dentro de la interfaz de manera separada de esta
+tabla.heading("ID", text="ID")
+tabla.heading("Título", text="Título")
+tabla.heading("Autor", text="Autor")
+tabla.heading("Tipo", text="Tipo")
+tabla.pack()
+# Permite asignar manualmente los valores
+id = tk.StringVar()     # StringVar hace que el valor que se ingrese sea en formato de texto
+titulo = tk.StringVar()
+autor = tk.StringVar()
+tipo = tk.StringVar()
+
+# Agregar campos para ingresar datos
+etiqueta1 = tk.Label(root, text='ID')   # Crea una etiqueta llamada ID (root==ingresar en la ventana o interfaz, text==nombre de la etiqueta)
+etiqueta1.place(x=50, y=250)    # .place Le da un lugar a la etiqueta en la interfaz de nuestro programa
+entrada1 = tk.Entry(root, textvariable=id)      # .Entry sirve para ingresar valores manualmente
+entrada1.place(x=100, y=250)    #Le da un lugar en la interfaz a la entrada
+# Los cuatro comentarios anteriores se repiten para crear las siguientes etiquetas
+etiqueta2 = tk.Label(root, text='Titulo')
+etiqueta2.place(x=50, y= 280)
+entrada2 = tk.Entry(root, textvariable=titulo)
+entrada2.place(x=100, y=280)
+
+etiqueta3 = tk.Label(root, text='Autor')
+etiqueta3.place(x=50, y=310)
+entrada3 = tk.Entry(root, textvariable=autor)
+entrada3.place(x=100, y=310)
+
+etiqueta4 = tk.Label(root, text='Tipo')
+etiqueta4.place(x=50, y=350)
+entrada4 = tk.Entry(root, textvariable=tipo)
+entrada4.place(x=100, y=350)
+
+# Botones
+boton_insertar = tk.Button(root, text='Registrar', bg='green', bd=4, command=insertar_dAcademico)   # .Button crea un boton; bg==color del boton; bd==profundidad del boton
+boton_insertar.place(x=250, y=250)      # Se le da un lugar al boton dentro de la interfaz
+
+boton_borrar = tk.Button(root, text='Borrar', bg='red', bd=4, command=borrar_seleccion)
+boton_borrar.place(x=255, y=290)
+
+boton_borrar = tk.Button(root, text='Actualizar', bd=4, command=actualizar_seleccion)
+boton_borrar.place(x=350, y=250)
+
+boton_consultar = tk.Button(root, text='Consultar', bd=4, command=consultar_base_datos)
+boton_consultar.place(x=350, y=290)
+
+root.mainloop()  
