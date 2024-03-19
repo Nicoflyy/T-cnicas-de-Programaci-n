@@ -6,7 +6,7 @@ import sqlite3
 #Se crean las funciones necesarias
 def insertar_dAcademico():  #Funcion para insertar a la base de dato
     # Se crea la tabla 
-    cursor.execute('''CREATE TABLE IF NOT EXISTS documentos_academicos (
+    cursor.execute('''CREATE TABLE IF NOT EXISTS documentos_academicos (                   
                     id INTEGER PRIMARY KEY,
                     titulo TEXT,
                     autor TEXT,
@@ -14,21 +14,21 @@ def insertar_dAcademico():  #Funcion para insertar a la base de dato
                   )''')
     
     ID = id.get()
-    Titulo = titulo.get()   # .get llama el valor ingresado en la entrada respectiva
+    Titulo = titulo.get()   # .get llama el valor ingresado en la variable respectiva
     Autor = autor.get()
     Tipo = tipo.get()
 
     cursor.execute('INSERT INTO documentos_academicos (id, titulo, autor, tipo) VALUES (?, ?, ?, ?)', (ID, Titulo, Autor, Tipo))    #Inserta los datos en la tabla creada
     conexion.commit()   #Se guardan los cambios
     messagebox.showinfo("Éxito", "Documento académico agregado correctamente")      # Crea una ventana de emergencia
-    mostrar_datos()
+    mostrar_datos()     # Actualiza la tabla creada para mostrar el resultado en nuestra interfaz
 
 def mostrar_datos():    # Funcion que muestra los datos
     cursor.execute("SELECT * FROM documentos_academicos")   # Selecciona todos los registros y todas las columnas de la tabla
     documentos_academicos = cursor.fetchall()   # Esta línea de código recupera todos los resultados de una consulta SQL ejecutada previamente y los almacena en la variable 'documentos_academicos'
     tabla.delete(*tabla.get_children())  # Limpiar la tabla antes de insertar nuevos datos
     for documento in documentos_academicos:     # Este fragmento de código está diseñado para agregar datos a una tabla en una interfaz gráfica utilizando la biblioteca Tkinter en Python
-        tabla.insert("", tk.END, values=documento)
+        tabla.insert("", tk.END, values=documento)  #Inserta los valores de la nueva fila dede la raiz de la tabla
 
 def borrar_seleccion():     # Funcion para borrar datos de la base de datos
     seleccion = tabla.selection()      # Esta línea de código obtiene una lista de los elementos seleccionados en una tabla de la interfaz gráfica
